@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-source "lib/utils.sh"
-source "lib/db_manager.sh"
-source "lib/table_manager.sh"
+# $0 is the path to the script from where you executed it and dirname will extract the path without the script name
+source "$(dirname "$0")/lib/utils.sh"
+source "$(dirname "$0")/lib/db_manager.sh"
+source "$(dirname "$0")/lib/table_manager.sh"
 
 mkdir -p "${DB_ROOT}"
 

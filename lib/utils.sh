@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DB_ROOT="./DBs"
+DB_ROOT="$(dirname "$0")/DBs"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -8,7 +8,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color (Reset)
 
 print_header() {
-  echo -e "${CYAN}==> $*${NC}"
+  echo -e "${CYAN}==> $*${NC}" # NC at the end to reset the color for rest of the terminal
 }
 
 print_success() {
@@ -43,4 +43,16 @@ confirm_prompt() {
   fi
 
   return 1
+}
+
+load_schema() {
+  local tableName="$1"
+  local metaFile="${DB_ROOT}/${CURRENT_DB}/${tableName}.meta"
+
+  if [[ ! -f "$metaFile" ]]; then
+    print_error "Table schema not found."
+    return 1
+  fi
+
+  cat "$metaFile" | tr ',' '\n'
 }
