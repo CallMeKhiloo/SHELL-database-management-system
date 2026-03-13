@@ -33,6 +33,19 @@ validate_name() {
   return 1
 }
 
+validate_int() {
+  [[ "$1" =~ ^[0-9]+$ ]]
+}
+
+validate_date() {
+  # -d to check the provided string not "now", then we discard the output and error
+  if date -d "$1" "+%Y-%m-%d" >/dev/null 2>&1; then
+    return 0
+  else
+    return 1
+  fi
+}
+
 confirm_prompt() {
   local prompt="$1"
 
