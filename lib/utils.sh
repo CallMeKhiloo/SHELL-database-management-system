@@ -5,6 +5,7 @@ DB_ROOT="$(dirname "$0")/DBs"
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
+YELLOW='\033[0;33m'
 NC='\033[0m' # No Color (Reset)
 
 print_header() {
@@ -17,6 +18,10 @@ print_success() {
 
 print_error() {
   echo -e "${RED}$*${NC}" >&2
+}
+
+print_warning() {
+  echo -e "${YELLOW}$*${NC}"
 }
 
 validate_name() {
@@ -58,14 +63,33 @@ confirm_prompt() {
   return 1
 }
 
-load_schema() {
-  local tableName="$1"
-  local metaFile="${DB_ROOT}/${CURRENT_DB}/${tableName}.meta"
+# Usage: print_table_formatted <dbfile> [filter_column_or_index] [filter_value]
+print_table_formatted() {
+  local dbfile="$1"
+  local filter_col="${2-}"
+  local filter_val="${3-}"
 
-  if [[ ! -f "$metaFile" ]]; then
-    print_error "Table schema not found."
+  # Delegate formatting logic to a standalone AWK script for readability
+  awk -f "$(dirname "$0")/lib/format_table.awk" -v fcol="$filter_col" -v fval="$filter_val" "$dbfile"
+
+  rc=$?
+  case $rc in
+  0) return 0 ;;
+  2)
+    print_warning "Table is empty."
+    return 0
+    ;;
+  3)
+    print_error "Column '$filter_col' not found."
+    return 2
+    ;;
+  4)
+    print_warning "No matching rows found for '$filter_col' = '$filter_val'."
+    return 0
+    ;;
+  *)
+    print_error "An unexpected formatting error occurred (Code: $rc)."
     return 1
-  fi
-
-  cat "$metaFile" | tr ',' '\n'
+    ;;
+  esac
 }

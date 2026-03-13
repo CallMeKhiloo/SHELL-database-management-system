@@ -27,16 +27,16 @@ list_databases() {
   print_header "Databases"
 
   if [ ! -d "${DB_ROOT}" ]; then
-    print_error "No databases found."
-    return 1
+    print_warning "No databases found."
+    return 0
   fi
 
   local -a dbs
   mapfile -t dbs < <(find "${DB_ROOT}" -maxdepth 1 -mindepth 1 -type d -printf '%f\n' 2>/dev/null | sort)
 
   if [ ${#dbs[@]} -eq 0 ]; then
-    print_error "No databases found."
-    return 1
+    print_warning "No databases found."
+    return 0
   fi
 
   local i
@@ -49,8 +49,8 @@ list_databases() {
 
 drop_database() {
   if ! list_databases >/dev/null 2>&1; then
-    print_error "No databases to drop."
-    return 1
+    print_warning "No databases to drop."
+    return 0
   fi
 
   local name
@@ -72,12 +72,11 @@ drop_database() {
       print_success "Database '$name' removed."
       return 0
     fi
-
     print_error "Failed to remove database '$name'."
     return 1
   fi
 
-  print_header "Aborted."
+  print_warning "Aborted."
   return 2
 }
 
