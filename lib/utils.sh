@@ -63,6 +63,18 @@ confirm_prompt() {
   return 1
 }
 
+load_schema() {
+  local tableName="$1"
+  local metaFile="${DB_ROOT}/${CURRENT_DB}/${tableName}.meta"
+
+  if [[ ! -f "$metaFile" ]]; then
+    print_error "Table schema not found."
+    return 1
+  fi
+
+  cat "$metaFile" | tr ',' '\n'
+}
+
 # Usage: print_table_formatted <dbfile> [filter_column_or_index] [filter_value]
 print_table_formatted() {
   local dbfile="$1"
