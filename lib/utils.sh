@@ -43,6 +43,11 @@ validate_int() {
 }
 
 validate_date() {
+  # check the format first
+  if [[ ! "$1" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+    return 1
+  fi
+
   # -d to check the provided string not "now", then we discard the output and error
   if date -d "$1" "+%Y-%m-%d" >/dev/null 2>&1; then
     return 0
