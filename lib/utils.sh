@@ -87,7 +87,7 @@ print_table_formatted() {
   local filter_val="${3-}"
 
   # Delegate formatting logic to a standalone AWK script for readability
-  awk -f "${PROJECT_ROOT}/lib/awk/format_table.awk" -v fcol="$filter_col" -v fval="$filter_val" "$dbfile"
+  awk -f "${PROJECT_ROOT}/lib/awk/format_table.awk" -v col="$filter_col" -v val="$filter_val" "$dbfile"
 
   rc=$?
   case $rc in

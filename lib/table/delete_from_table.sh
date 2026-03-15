@@ -63,7 +63,7 @@ delete_from_table() {
   # Count matching rows. prints -1 on column-not-found
   count=$(awk -f "${PROJECT_ROOT}/lib/awk/count_rows.awk" -v col="$col" -v val="$val" "$dbfile")
 
-  if [[ "$count" == "-1" ]]; then
+  if [[ "$count" -eq -1 ]]; then
     print_error "Column '$col' not found."
     return 2
   fi

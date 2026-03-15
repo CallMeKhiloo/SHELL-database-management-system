@@ -1,125 +1,103 @@
 #!/usr/bin/awk -f
-# Expects variables passed via -v: fcol (filter column name or index), fval (filter value)
+# Expects variables passed via -v: col (filter column name or index), val (filter value)
 function trim(s) {
     gsub(/^[ \t\r\n]+|[ \t\r\n]+$/, "", s)
     return s
 }
 
-BEGIN {
-    FS = "\\|"
-    OFS = " | "
-}
+function update_widths(row,   i, field_len, fields) {
+    split(row, fields, FS)
 
-NR == 1 {
-    nfields = NF
+    for (i = 1; i <= num_fields; i++) {
+        field_len = length(trim(fields[i]))
 
-    for (i = 1; i <= NF; i++) {
-        hdr[i] = trim($i)
-        hdr_lc[i] = tolower(hdr[i])
-        w[i] = length(hdr[i])
-    }
-
-    next
-}
-
-{
-    rows[++r] = $0
-    split($0, a, FS)
-
-    for (i = 1; i <= nfields; i++) {
-        val = trim(a[i])
-
-        if (length(val) > w[i]) w[i] = length(val)
+        if (field_len > col_width[i]) col_width[i] = field_len
     }
 }
 
-function print_table(arr, cnt, widths, i, k, a, val) {
-    # Header
-    for (i = 1; i <= nfields; i++) {
-        printf("%-*s", widths[i], hdr[i])
+function print_table(data, count,   i, j, fields) {
+    if (count == 0) return
 
-        if (i < nfields) printf(OFS)
+    for (i = 1; i <= num_fields; i++) {
+        printf("%-*s", col_width[i], header_name[i])
+
+        if (i < num_fields) printf(OFS)
     }
 
     print ""
 
-    # Separator
-    for (i = 1; i <= nfields; i++) {
-        for (j = 1; j <= widths[i]; j++) printf("-")
+    for (i = 1; i <= num_fields; i++) {
+        for (j = 1; j <= col_width[i]; j++) printf("-")
 
-        if (i < nfields) printf(OFS)
+        if (i < num_fields) printf(OFS)
     }
 
     print ""
 
-    # Rows
-    for (k = 1; k <= cnt; k++) {
-        split(arr[k], a, FS)
+    for (i = 1; i <= count; i++) {
+        split(data[i], fields, FS)
 
-        for (i = 1; i <= nfields; i++) {
-            val = trim(a[i])
-            printf("%-*s", widths[i], val)
+        for (j = 1; j <= num_fields; j++) {
+            printf("%-*s", col_width[j], trim(fields[j]))
 
-            if (i < nfields) printf(OFS)
+            if (j < num_fields) printf(OFS)
         }
 
         print ""
     }
 }
 
-END {
-    if (r == 0) exit 2
+BEGIN {
+    FS = "\\|"
+    OFS = " | "
+    val = tolower(trim(val))
+    col = tolower(trim(col))
+}
 
-    if (fcol == "") {
-        print_table(rows, r, w)
-        exit 0
+NR == 1 {
+    num_fields = NF
+
+    for (i = 1; i <= NF; i++) {
+        header_name[i] = tolower(trim($i))
+        col_width[i] = length(header_name[i])
     }
 
-    fcol_trim = trim(fcol)
-    fcol_lc = tolower(fcol_trim)
-    fval_trim = trim(fval)
-    fval_lc = tolower(fval_trim)
+    if (col != "") {
+        if (col ~ /^[0-9]+$/) {
+            col_index = int(col)
 
-    idx = 0
-
-    if (fcol_trim ~ /^[0-9]+$/) {
-        idx = int(fcol_trim)
-
-        if (idx < 1 || idx > nfields) exit 3
-    }
-    else {
-        for (i = 1; i <= nfields; i++)
-        if (hdr_lc[i] == fcol_lc) {
-            idx = i
-            break
+            if (col_index < 1 || col_index > num_fields) exit 3
         }
-
-        if (idx == 0) exit 3
-    }
-
-    m = 0
-
-    for (i = 1; i <= nfields; i++) w2[i] = length(hdr[i])
-
-    for (k = 1; k <= r; k++) {
-        split(rows[k], a, FS)
-        val = trim(a[idx])
-
-        if (tolower(val) == fval_lc) {
-            matched[++m] = rows[k]
-
-            for (i = 1; i <= nfields; i++) {
-                v = trim(a[i])
-
-                if (length(v) > w2[i]) w2[i] = length(v)
+        else {
+            for (i = 1; i <= num_fields; i++)
+            if (header_name[i] == col) {
+                col_index = i
+                break
             }
+
+            if (col_index == 0) exit 3
         }
     }
 
-    if (m == 0) exit 4
+    next
+}
 
-    for (i = 1; i <= nfields; i++) w[i] = w2[i]
+{
+    total_rows++
 
-    print_table(matched, m, w)
-    exit 0
+    # col_index == 0 means no filter
+    # col_index  > 0 means filter active
+    if (col_index == 0 || tolower(trim($col_index)) == val) {
+        result_count++
+        result_data[result_count] = $0
+        update_widths($0)
+    }
+}
+
+END {
+    if (total_rows == 0) exit 2
+
+    if (result_count == 0) exit 4
+
+    print_table(result_data, result_count)
 }

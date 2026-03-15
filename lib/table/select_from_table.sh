@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 select_from_table() {
-  local tableName dbfile ans col val rc header lines
+  local tableName dbfile col val rc header lines
 
   read -r -p "Enter the table name to select from: " tableName
 
@@ -29,8 +29,7 @@ select_from_table() {
     return 0
   fi
 
-  read -r -p "Filter by column? [y/N]: " ans
-  if [[ "$ans" == [Yy] || "$ans" == [Yy][Ee][Ss] ]]; then
+  if confirm_prompt "Filter by column?" ; then
     read -r -p "Enter column name or index to filter by: " col
     if [[ -z "$col" ]]; then
       print_error "No column provided."
