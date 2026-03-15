@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
 # $0 is the path to the script from where you executed it and dirname will extract the path without the script name
-source "$(dirname "$0")/lib/displayMenu.sh"
-source "$(dirname "$0")/lib/utils.sh"
-source "$(dirname "$0")/lib/db_manager.sh"
-source "$(dirname "$0")/lib/table_manager.sh"
+PROJECT_ROOT="$(dirname "$0")"
+source "${PROJECT_ROOT}/lib/displayMenu.sh"
+source "${PROJECT_ROOT}/lib/utils.sh"
+source "${PROJECT_ROOT}/lib/db_manager.sh"
+source "${PROJECT_ROOT}/lib/table_manager.sh"
 
 mkdir -p "${DB_ROOT}"
 

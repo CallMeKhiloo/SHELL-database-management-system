@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DB_ROOT="$(dirname "$0")/DBs"
+DB_ROOT="${PROJECT_ROOT}/DBs"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -87,7 +87,7 @@ print_table_formatted() {
   local filter_val="${3-}"
 
   # Delegate formatting logic to a standalone AWK script for readability
-  awk -f "$(dirname "$0")/lib/format_table.awk" -v fcol="$filter_col" -v fval="$filter_val" "$dbfile"
+  awk -f "${PROJECT_ROOT}/lib/awk/format_table.awk" -v fcol="$filter_col" -v fval="$filter_val" "$dbfile"
 
   rc=$?
   case $rc in
